@@ -32,7 +32,7 @@ func TestParser(t *testing.T) {
 	}
 
 	scanner := NewScanner(input)
-	parser := NewParser(scanner)
+	parser := NewLexer(scanner)
 
 	for i, expected := range tests {
 		tok := parser.nextToken()

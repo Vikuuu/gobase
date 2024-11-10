@@ -1,9 +1,7 @@
 package parser
 
-import "fmt"
-
-// Parser struct with token buffer for backtracking
-type Parser struct {
+// Lex struct with token buffer for backtracking
+type Lex struct {
 	s   *Scanner
 	buf struct {
 		tok Token
@@ -11,24 +9,23 @@ type Parser struct {
 	}
 }
 
-// NewParser creates a new instance of Parser
-func NewParser(s *Scanner) *Parser {
-	return &Parser{s: s}
+// NewLexer creates a new instance of Parser
+func NewLexer(s *Scanner) *Lex {
+	return &Lex{s: s}
 }
 
 // ParseStatement parse the input and returns the tokens for the statement
-func (p *Parser) ParseStatement() {
+func (p *Lex) Lexer() {
 	for {
 		tok := p.nextToken()
 		if tok.Type == EOF {
 			break
 		}
-		fmt.Printf("Token: %+v\n", tok)
 	}
 }
 
 // nextToken retrieves the next token, handling buffering for backtracking
-func (p *Parser) nextToken() Token {
+func (p *Lex) nextToken() Token {
 	// Return token from buffer if available
 	if p.buf.n != 0 {
 		p.buf.n = 0
@@ -44,6 +41,6 @@ func (p *Parser) nextToken() Token {
 }
 
 // unscan pushes the last token back onto the buffer
-func (p *Parser) unscan() {
+func (p *Lex) unscan() {
 	p.buf.n = 1
 }
