@@ -1,7 +1,7 @@
 # gobase
 automatic schema detection that creates the migrations for your code
 
-![gobase-img](https://github.com/Vikuuu/gobase/assets/img/gobase-img.png) 
+<img src="assets/img/gobase-img.png" alt="gobase-img" height=30% width=30%>
 
 ## Goal
 This is the goal for the gobase v0.0.1 
