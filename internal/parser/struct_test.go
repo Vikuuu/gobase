@@ -7,8 +7,8 @@ import (
 func TestParser(t *testing.T) {
 	testFileName := "./test_example.go"
 	expectedSchema := Schema{
-		schemaName: "users",
-		schemaFields: []struct {
+		SchemaName: "users",
+		SchemaFields: []struct {
 			Name     string
 			DataType string
 		}{
@@ -22,25 +22,25 @@ func TestParser(t *testing.T) {
 
 	outputSchema := Parse(testFileName)
 
-	if expectedSchema.schemaName != outputSchema.schemaName {
+	if expectedSchema.SchemaName != outputSchema.SchemaName {
 		t.Fatalf(
 			"Struct name not Equal. expected=%s. got=%s",
-			expectedSchema.schemaName,
-			outputSchema.schemaName,
+			expectedSchema.SchemaName,
+			outputSchema.SchemaName,
 		)
 	}
 
-	if len(expectedSchema.schemaFields) != len(outputSchema.schemaFields) {
+	if len(expectedSchema.SchemaFields) != len(outputSchema.SchemaFields) {
 		t.Fatalf(
 			"Number of fields not equal. expected=%d, got=%d",
-			len(expectedSchema.schemaFields),
-			len(outputSchema.schemaFields),
+			len(expectedSchema.SchemaFields),
+			len(outputSchema.SchemaFields),
 		)
 	}
 
-	for i := range expectedSchema.schemaFields {
-		expectedField := expectedSchema.schemaFields[i]
-		outputField := outputSchema.schemaFields[i]
+	for i := range expectedSchema.SchemaFields {
+		expectedField := expectedSchema.SchemaFields[i]
+		outputField := outputSchema.SchemaFields[i]
 
 		if expectedField.Name != outputField.Name {
 			t.Fatalf(

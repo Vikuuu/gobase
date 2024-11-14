@@ -14,8 +14,8 @@ import (
 )
 
 type Schema struct {
-	schemaName   string
-	schemaFields []struct {
+	SchemaName   string
+	SchemaFields []struct {
 		Name     string
 		DataType string
 	}
@@ -33,7 +33,7 @@ func Parse(fileName string) Schema {
 	ast.Inspect(f, func(n ast.Node) bool {
 		if funcDecl, ok := n.(*ast.GenDecl); ok {
 			if funcDecl.Tok == token.TYPE {
-				table.schemaName = funcDecl.Specs[0].(*ast.TypeSpec).Name.Name
+				table.SchemaName = funcDecl.Specs[0].(*ast.TypeSpec).Name.Name
 				for _, field := range funcDecl.Specs[0].(*ast.TypeSpec).Type.(*ast.StructType).Fields.List {
 					fields := struct {
 						Name     string
@@ -50,7 +50,7 @@ func Parse(fileName string) Schema {
 						fields.DataType = "unkown"
 					}
 
-					table.schemaFields = append(table.schemaFields, fields)
+					table.SchemaFields = append(table.SchemaFields, fields)
 				}
 			}
 		}
