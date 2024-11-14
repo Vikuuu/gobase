@@ -7,21 +7,55 @@
 package parser
 
 import (
-	"unicode"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"log"
 )
 
-func LookupIdent(ident string) TokenType {
-	if tok, ok := keyword[ident]; ok {
-		return tok
+type Schema struct {
+	schemaName   string
+	schemaFields []struct {
+		Name     string
+		DataType string
 	}
-	return IDENT
 }
 
-// Utility functions to check character type
-func isLetter(ch byte) bool {
-	return unicode.IsLetter(rune(ch))
-}
+func Parse(fileName string) Schema {
+	fs := token.NewFileSet()
+	f, err := parser.ParseFile(fs, fileName, nil, parser.AllErrors)
+	if err != nil {
+		log.Fatalf("Errors: %s", err)
+	}
 
-func isDigit(ch byte) bool {
-	return unicode.IsDigit(rune(ch))
+	table := Schema{}
+
+	ast.Inspect(f, func(n ast.Node) bool {
+		if funcDecl, ok := n.(*ast.GenDecl); ok {
+			if funcDecl.Tok == token.TYPE {
+				table.schemaName = funcDecl.Specs[0].(*ast.TypeSpec).Name.Name
+				for _, field := range funcDecl.Specs[0].(*ast.TypeSpec).Type.(*ast.StructType).Fields.List {
+					fields := struct {
+						Name     string
+						DataType string
+					}{}
+					fields.Name = field.Names[0].Name
+					switch t := field.Type.(type) {
+					case *ast.Ident:
+						fields.DataType = field.Type.(*ast.Ident).Name
+					case *ast.SelectorExpr:
+						fields.DataType = t.Sel.Name
+					default:
+						log.Printf("Unkown data type: %s", t)
+						fields.DataType = "unkown"
+					}
+
+					table.schemaFields = append(table.schemaFields, fields)
+				}
+			}
+		}
+		return true
+	})
+
+	return table
 }
