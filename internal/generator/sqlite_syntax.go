@@ -6,7 +6,7 @@ import (
 	"github.com/Vikuuu/gobase/internal/parser"
 )
 
-func sqLiteCreateTable(fileName string) string {
+func SqLiteCreateTable(fileName string) string {
 	schema := parser.Parse(fileName)
 	createQuery := fmt.Sprintf("CREATE TABLE %s (\n\t", schema.SchemaName)
 	for i, field := range schema.SchemaFields {
