@@ -35,3 +35,24 @@ CREATE TABLE users (
     is_member BOOLEAN
 );
 ```
+
+## Milestones for gobase v0.0.1
+
+- [x] Parsing the struct
+- [x] SQLite table creation query generator
+- [ ] Basic Table Creation
+    - [ ] Connect to database
+    - [ ] Create tables
+    - [ ] Basic error handling
+    - [ ] Simple CLI command
+- [ ] Schema Management
+    - [ ] Track schema state
+    - [ ] Detect changes
+    - [ ] Generate diff
+- [ ] Migration System
+    - [ ] Generate migration files
+    - [ ] Execute migrations
+    - [ ] Track migration state
+- [ ] Complete CLI
+    - [ ] All basic commands
+    - [ ] Configuration handling
