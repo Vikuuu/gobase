@@ -5,7 +5,7 @@ import (
 )
 
 func TestParser(t *testing.T) {
-	testFileName := "./test_example.go"
+	testFileName := "../test/create_table.go"
 	expectedSchema := Schema{
 		SchemaName: "users",
 		SchemaFields: []struct {
