@@ -1,11 +1,11 @@
-package generator
+package gobase
 
 import (
 	"testing"
 )
 
 func TestSqLiteCreateTable(t *testing.T) {
-	fileName := "../test/create_table.go"
+	fileName := "./testdata/create_table.go"
 	expectedQuery := "CREATE TABLE users (\n\tid INTEGER,\n\tname TEXT,\n\tcreated_at DATETIME,\n\tupdated_at DATETIME,\n\tis_member BOOLEAN\n);"
 
 	outputQuery := SqLiteCreateTable(fileName)

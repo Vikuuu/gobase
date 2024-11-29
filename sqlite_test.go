@@ -1,4 +1,4 @@
-package database
+package gobase
 
 import (
 	"database/sql"
@@ -17,7 +17,7 @@ func TestSqliteConn(t *testing.T) {
 }
 
 func TestCreateTable(t *testing.T) {
-	fileName := "../test/create_table.go"
+	fileName := "./testdata/create_table.go"
 
 	// Creating conn with DB
 	db, err := SqliteConn(DBFILENAME)

@@ -2,7 +2,7 @@
 * This file defines the input and output
 * expected in the gobase v0.0.1
  */
-package main
+package gobase
 
 import (
 	"time"

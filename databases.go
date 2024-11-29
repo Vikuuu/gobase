@@ -1,4 +1,4 @@
-package database
+package gobase
 
 const (
 	SQLITE = "sqlite3"

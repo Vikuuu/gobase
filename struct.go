@@ -4,7 +4,7 @@
 * SQL equivalent syntax.
  */
 
-package parser
+package gobase
 
 import (
 	"go/ast"

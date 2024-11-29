@@ -1,4 +1,4 @@
-package generator
+package gobase
 
 var sqliteMapping = map[string]string{
 	"int":    "INTEGER",

@@ -1,11 +1,11 @@
-package parser
+package gobase
 
 import (
 	"testing"
 )
 
 func TestParser(t *testing.T) {
-	testFileName := "../test/create_table.go"
+	testFileName := "./testdata/create_table.go"
 	expectedSchema := Schema{
 		SchemaName: "users",
 		SchemaFields: []struct {

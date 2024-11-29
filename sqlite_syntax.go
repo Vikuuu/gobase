@@ -1,13 +1,11 @@
-package generator
+package gobase
 
 import (
 	"fmt"
-
-	"github.com/Vikuuu/gobase/internal/parser"
 )
 
 func SqLiteCreateTable(fileName string) string {
-	schema := parser.Parse(fileName)
+	schema := Parse(fileName)
 	createQuery := fmt.Sprintf("CREATE TABLE %s (\n\t", schema.SchemaName)
 	for i, field := range schema.SchemaFields {
 		if i == len(schema.SchemaFields)-1 {
