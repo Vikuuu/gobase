@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func SqLiteCreateTable(fileName string) string {
+func SqLiteCreateTable(fileName string) (cQuery string, dQuery string) {
 	schema := Parse(fileName)
 	createQuery := fmt.Sprintf("CREATE TABLE %s (\n\t", schema.SchemaName)
 	for i, field := range schema.SchemaFields {
@@ -20,5 +20,7 @@ func SqLiteCreateTable(fileName string) string {
 	}
 	createQuery += ");"
 
-	return createQuery
+	dropQuery := fmt.Sprintf("DROP TABLE %s;", schema.SchemaName)
+
+	return createQuery, dropQuery
 }

@@ -6,11 +6,15 @@ import (
 
 func TestSqLiteCreateTable(t *testing.T) {
 	fileName := "./testdata/create_table.go"
-	expectedQuery := "CREATE TABLE users (\n\tid INTEGER,\n\tname TEXT,\n\tcreated_at DATETIME,\n\tupdated_at DATETIME,\n\tis_member BOOLEAN\n);"
+	expectedUpQuery := "CREATE TABLE users (\n\tid INTEGER,\n\tname TEXT,\n\tcreated_at DATETIME,\n\tupdated_at DATETIME,\n\tis_member BOOLEAN\n);"
+	expectedDownQuery := "DROP TABLE users;"
 
-	outputQuery := SqLiteCreateTable(fileName)
+	outputUpQuery, outputDownQuery := SqLiteCreateTable(fileName)
 
-	if expectedQuery != outputQuery {
-		t.Fatalf("Not Equal. expected=%s. got=%s", expectedQuery, outputQuery)
+	if expectedUpQuery != outputUpQuery {
+		t.Errorf("Up query err. expected=%s. got=%s", expectedUpQuery, outputUpQuery)
+	}
+	if expectedDownQuery != outputDownQuery {
+		t.Errorf("Down query err. expected=%s. got=%s", expectedDownQuery, outputDownQuery)
 	}
 }
