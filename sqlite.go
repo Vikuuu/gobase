@@ -17,14 +17,3 @@ func SqliteConn(dbFileName string) (*sql.DB, error) {
 
 	return db, nil
 }
-
-func createTable(db *sql.DB, fileName string) error {
-	query := SqLiteCreateTable(fileName)
-
-	_, err := db.Exec(query)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
