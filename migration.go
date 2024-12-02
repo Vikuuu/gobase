@@ -2,9 +2,11 @@
 package gobase
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"os"
+	"slices"
 )
 
 const (
@@ -17,6 +19,8 @@ const (
 
 `
 	createMigFileName = "./migrations"
+	upMigTempLine     = "-- Up Migration"
+	downMigTempLine   = "-- Down Migration"
 )
 
 // calls creation func accordingly
@@ -52,3 +56,75 @@ func creationMigration(fileName string) []byte {
 func saveMigrationFile(outName string, data []byte) error {
 	return os.WriteFile(outName, data, 0644)
 }
+
+// TODO: Read from the given migration file and
+// read only btw `--Up migration` and `--Down migration`
+func getUpMigration(migrationFile string) (string, error) {
+	// open the file
+	file, err := os.Open(migrationFile)
+	if err != nil {
+		return "", fmt.Errorf("Err opening file: %s", err)
+	}
+	defer file.Close()
+
+	var migration string
+
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == downMigTempLine {
+			break
+		} else if line == upMigTempLine {
+			continue
+		} else {
+			migration += line + "\n"
+		}
+	}
+
+	if err = scanner.Err(); err != nil {
+		return "", fmt.Errorf("Err scanning file: %s", err)
+	}
+
+	return migration, nil
+}
+
+// TODO: Read from the given migration file and
+// read only btw `--Down migration` and `EOF`
+func getDownMigration(migrationFile string) (string, error) {
+	file, err := os.Open(migrationFile)
+	if err != nil {
+		return "", fmt.Errorf("Err opening file: %s", err)
+	}
+	defer file.Close()
+
+	var migration []string
+
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		migration = append(migration, line)
+	}
+
+	if err = scanner.Err(); err != nil {
+		return "", fmt.Errorf("Err scanning file: %s", err)
+	}
+
+	indexDown := slices.IndexFunc(migration, func(s string) bool {
+		return s == "-- Down Migration"
+	})
+
+	res := ""
+
+	for i := indexDown + 1; i < len(migration); i++ {
+		res += migration[i]
+	}
+
+	return res, nil
+}
+
+// Func responsible for migrating to the database
+// Takes the dbCon, and migration file as Input
+func upMigrate()   {}
+func downMigrate() {}

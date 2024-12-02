@@ -46,3 +46,29 @@ func TestMigrationFile(t *testing.T) {
 		t.Errorf("Mismatch in migration SQL:\nExpected:\n%s\n\nGot:\n%s", expected, got)
 	}
 }
+
+func TestGetUpMigration(t *testing.T) {
+	expUpMig := fmt.Sprintf(
+		"\nCREATE TABLE users (\n\tid INTEGER,\n\tname TEXT,\n\tcreated_at DATETIME,\n\tupdated_at DATETIME,\n\tis_member BOOLEAN\n);\n\n",
+	)
+	gotUpMig, err := getUpMigration("./testdata/migrations/001_user.sql")
+	if err != nil {
+		t.Fatalf("Err getting Up mig: %s", err)
+	}
+
+	if expUpMig != gotUpMig {
+		t.Errorf("Migration not equal. expected: \n%s\n. got: \n%s\n", expUpMig, gotUpMig)
+	}
+}
+
+func TestGetDownMigration(t *testing.T) {
+	expDownMig := fmt.Sprintf("DROP TABLE users;")
+	gotDownMig, err := getDownMigration("./testdata/migrations/001_user.sql")
+	if err != nil {
+		t.Fatalf("Err getting Down mig: %s", err)
+	}
+
+	if expDownMig != gotDownMig {
+		t.Errorf("Migration not equal. expected: \n%s\n. got: \n%s\n", expDownMig, gotDownMig)
+	}
+}
