@@ -1,6 +1,7 @@
 package gobase
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"os"
@@ -8,8 +9,9 @@ import (
 )
 
 const (
-	testFile   = "./testdata/create_table.go"
-	testMigDir = "./testdata/migrations"
+	testFile    = "./testdata/create_table.go"
+	testMigDir  = "./testdata/migrations"
+	testMigFile = "./testdata/migrations/001_user.sql"
 )
 
 var expected = fmt.Sprintf(
@@ -70,5 +72,50 @@ func TestGetDownMigration(t *testing.T) {
 
 	if expDownMig != gotDownMig {
 		t.Errorf("Migration not equal. expected: \n%s\n. got: \n%s\n", expDownMig, gotDownMig)
+	}
+}
+
+func TestMigration(t *testing.T) {
+	dbCon, err := SqliteConn(":memory:")
+	if err != nil {
+		t.Fatalf("Err conn db: %s", err)
+	}
+
+	testCase := []struct {
+		name   string
+		testFn func(*sql.DB, string) error
+		result string
+	}{
+		{name: "TestUpMigration", testFn: upMigrate, result: "users"},
+		{name: "TestDownMigration", testFn: downMigrate, result: ""},
+	}
+
+	for _, tc := range testCase {
+		t.Run(tc.name, func(t *testing.T) {
+			// Test both UP and DOWN migrations
+			// First the UP mig
+			err := tc.testFn(dbCon, testMigFile)
+			if err != nil {
+				t.Fatalf("Err migrating: %s", err)
+			}
+
+			row, err := dbCon.Query(
+				`SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'`,
+			)
+			if err != nil {
+				t.Fatalf("Err getting table rows: %s", err)
+			}
+
+			for row.Next() {
+				var name string
+				if err := row.Scan(&name); err != nil {
+					t.Fatal(err)
+				}
+
+				if name != tc.result {
+					t.Errorf("Table not match. expected: %s. got: %s", tc.result, name)
+				}
+			}
+		})
 	}
 }

@@ -4,6 +4,7 @@ package gobase
 import (
 	"bufio"
 	"bytes"
+	"database/sql"
 	"fmt"
 	"os"
 	"slices"
@@ -57,7 +58,7 @@ func saveMigrationFile(outName string, data []byte) error {
 	return os.WriteFile(outName, data, 0644)
 }
 
-// TODO: Read from the given migration file and
+// NOTE: Read from the given migration file and
 // read only btw `--Up migration` and `--Down migration`
 func getUpMigration(migrationFile string) (string, error) {
 	// open the file
@@ -89,7 +90,7 @@ func getUpMigration(migrationFile string) (string, error) {
 	return migration, nil
 }
 
-// TODO: Read from the given migration file and
+// NOTE: Read from the given migration file and
 // read only btw `--Down migration` and `EOF`
 func getDownMigration(migrationFile string) (string, error) {
 	file, err := os.Open(migrationFile)
@@ -126,5 +127,30 @@ func getDownMigration(migrationFile string) (string, error) {
 
 // Func responsible for migrating to the database
 // Takes the dbCon, and migration file as Input
-func upMigrate()   {}
-func downMigrate() {}
+func upMigrate(dbCon *sql.DB, migrationFile string) error {
+	upMigration, err := getUpMigration(migrationFile)
+	if err != nil {
+		return err
+	}
+
+	_, err = dbCon.Exec(upMigration)
+	if err != nil {
+		return fmt.Errorf("Err migrating: %s", err)
+	}
+
+	return nil
+}
+
+func downMigrate(dbCon *sql.DB, migrationFile string) error {
+	downMigration, err := getDownMigration(migrationFile)
+	if err != nil {
+		return err
+	}
+
+	_, err = dbCon.Exec(downMigration)
+	if err != nil {
+		return fmt.Errorf("Err migrating: %s", err)
+	}
+
+	return nil
+}
