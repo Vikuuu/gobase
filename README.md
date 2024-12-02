@@ -40,18 +40,18 @@ CREATE TABLE users (
 
 - [x] Parsing the struct
 - [x] SQLite table creation query generator
-- [ ] Basic Table Creation
-    - [ ] Connect to database
-    - [ ] Create tables
-    - [ ] Basic error handling
+- [x] Basic Table Creation
+    - [x] Connect to database
+    - [x] Create tables
+    - [x] Basic error handling
     - [ ] Simple CLI command
 - [ ] Schema Management
     - [ ] Track schema state
     - [ ] Detect changes
     - [ ] Generate diff
-- [ ] Migration System
-    - [ ] Generate migration files
-    - [ ] Execute migrations
+- [x] Migration System
+    - [x] Generate migration files
+    - [x] Execute migrations
     - [ ] Track migration state
 - [ ] Complete CLI
     - [ ] All basic commands
