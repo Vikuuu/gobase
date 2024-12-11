@@ -29,7 +29,7 @@ func TestCreationMigrationFile(t *testing.T) {
 }
 
 func TestMigrationFile(t *testing.T) {
-	err := MigrationFile(testFile, testMigDir)
+	err := MigrationFile(testFile, testMigDir, "001_users.sql")
 	if err != nil {
 		t.Fatal(err)
 	}

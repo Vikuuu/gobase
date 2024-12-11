@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path/filepath"
 	"slices"
 )
 
@@ -19,19 +20,20 @@ const (
 -- Down Migration
 
 `
-	createMigFileName = "./migrations"
-	upMigTempLine     = "-- Up Migration"
-	downMigTempLine   = "-- Down Migration"
+	// createMigDirName = "./migrations"
+	upMigTempLine   = "-- Up Migration"
+	downMigTempLine = "-- Down Migration"
 )
 
 // calls creation func accordingly
-func MigrationFile(fileName, createMigFileName string) error {
+func MigrationFile(fileName, createMigDirName, MigFilename string) error {
 	data := creationMigration(fileName)
-	err := os.MkdirAll(createMigFileName, 0750)
+	err := os.MkdirAll(createMigDirName, 0750)
 	if err != nil {
 		return fmt.Errorf("Error creating dir: %s", err)
 	}
-	outFileName := createMigFileName + "/001_user.sql"
+	// outFileName := createMigDirName + "/001_users.sql"
+	outFileName := filepath.Join(createMigDirName, MigFilename)
 
 	f, err := os.Create(outFileName)
 	if err != nil {
