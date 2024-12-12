@@ -31,3 +31,28 @@ func CreateMetaTable(dbCon *sql.DB) error {
 
 	return nil
 }
+
+type metadata struct {
+	ID           int
+	CurrentState string
+	ChangesMade  string
+	CreatedAt    time.Time
+}
+
+func getPreviousState(dbCon *sql.DB) (metadata, error) {
+	query := `
+SELECT id, current_state, changes_made, created_at
+FROM gobase_metadata
+LIMIT 1;
+    `
+
+	md := metadata{}
+
+	row := dbCon.QueryRow(query)
+	err := row.Scan(&md)
+	if err != nil {
+		return md, err
+	}
+
+	return md, nil
+}
