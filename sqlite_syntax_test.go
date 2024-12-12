@@ -8,8 +8,9 @@ func TestSqLiteCreateTable(t *testing.T) {
 	fileName := "./testdata/create_table.go"
 	expectedUpQuery := "CREATE TABLE users (\n\tid INTEGER,\n\tname TEXT,\n\tcreated_at DATETIME,\n\tupdated_at DATETIME,\n\tis_member BOOLEAN\n);"
 	expectedDownQuery := "DROP TABLE users;"
+	schema := Parse(fileName)
 
-	outputUpQuery, outputDownQuery := SqLiteCreateTable(fileName)
+	outputUpQuery, outputDownQuery := SqLiteCreateTable(fileName, schema)
 
 	if expectedUpQuery != outputUpQuery {
 		t.Errorf("Up query err. expected=%s. got=%s", expectedUpQuery, outputUpQuery)
