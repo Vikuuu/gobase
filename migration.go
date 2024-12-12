@@ -26,9 +26,13 @@ const (
 )
 
 // calls creation func accordingly
-func MigrationFile(fileName, createMigDirName, MigFilename string) error {
-	data := creationMigration(fileName)
-	err := os.MkdirAll(createMigDirName, 0750)
+func MigrationFile(dbConn *sql.DB, fileName, createMigDirName, MigFilename string) error {
+	data, err := creationMigration(dbConn, fileName)
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(createMigDirName, 0750)
 	if err != nil {
 		return fmt.Errorf("Error creating dir: %s", err)
 	}
@@ -43,8 +47,23 @@ func MigrationFile(fileName, createMigDirName, MigFilename string) error {
 	return saveMigrationFile(f.Name(), data)
 }
 
-func creationMigration(fileName string) []byte {
-	upMigQuery, downMigQuery := SqLiteCreateTable(fileName)
+func creationMigration(dbConn *sql.DB, fileName string) ([]byte, error) {
+	schema := Parse(fileName)
+	upMigQuery, downMigQuery := "", ""
+
+	// TODO: Now check it with the previous state of the database
+	// If their is no previous state, then call the table creation function
+	// previous State var
+	_, err := getPreviousState(dbConn)
+	if err != nil {
+		// This case will mean that their is no previous state
+		// and this is the first time the migration is being run
+		if err == sql.ErrNoRows {
+			upMigQuery, downMigQuery = SqLiteCreateTable(fileName, schema)
+		} else {
+			return []byte{}, err
+		}
+	}
 
 	var buffer bytes.Buffer
 
@@ -53,7 +72,7 @@ func creationMigration(fileName string) []byte {
 	buffer.WriteString(downMigrationTemp)
 	buffer.Write([]byte(downMigQuery))
 
-	return buffer.Bytes()
+	return buffer.Bytes(), nil
 }
 
 func saveMigrationFile(outName string, data []byte) error {
