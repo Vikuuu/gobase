@@ -37,3 +37,56 @@ func TestCreateMetaTable(t *testing.T) {
 
 	os.Remove(DBFILENAME)
 }
+
+func TestSerializeSchema(t *testing.T) {
+	tests := []struct {
+		name         string
+		input        Schema
+		expectedJSON string
+		expectError  bool
+	}{
+		{
+			name: "Valid schema with fields",
+			input: Schema{
+				SchemaName: "users",
+				SchemaFields: []SchemaField{
+					{"id", "INTEGER"},
+					{"name", "TEXT"},
+					{"email", "TEXT"},
+				},
+			},
+			expectedJSON: `{"schema_name":"users","schema_fields":[{"name":"id","data_type":"INTEGER"},{"name":"name","data_type":"TEXT"},{"name":"email","data_type":"TEXT"}]}`,
+			expectError:  false,
+		},
+		{
+			name: "Empty schema fields",
+			input: Schema{
+				SchemaName:   "empty_table",
+				SchemaFields: []SchemaField{},
+			},
+			expectedJSON: `{"schema_name":"empty_table","schema_fields":[]}`,
+			expectError:  false,
+		},
+		{
+			name: "Empty schema name and fields",
+			input: Schema{
+				SchemaName:   "",
+				SchemaFields: []SchemaField{},
+			},
+			expectedJSON: `{"schema_name":"","schema_fields":[]}`,
+			expectError:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := serializeSchema(tt.input)
+			if (err != nil) != tt.expectError {
+				t.Errorf("serializeSchema() error = %v, expectError = %v", err, tt.expectError)
+			}
+			if got != tt.expectedJSON {
+				t.Errorf("serializeSchema() got = %s, want = %s", got, tt.expectedJSON)
+			}
+		})
+	}
+}

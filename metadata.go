@@ -3,6 +3,7 @@ package gobase
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -55,4 +56,21 @@ LIMIT 1;
 	}
 
 	return md, nil
+}
+
+func serializeSchema(schema Schema) (string, error) {
+	jsonData, err := json.Marshal(schema)
+	if err != nil {
+		return "", err
+	}
+	return string(jsonData), nil
+}
+
+func deserializeSchema(schema string) (Schema, error) {
+	var s Schema
+	err := json.Unmarshal([]byte(schema), &s)
+	if err != nil {
+		return Schema{}, err
+	}
+	return s, nil
 }
