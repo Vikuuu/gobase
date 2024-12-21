@@ -8,10 +8,7 @@ func TestParser(t *testing.T) {
 	testFileName := "./testdata/create_table.go"
 	expectedSchema := Schema{
 		SchemaName: "users",
-		SchemaFields: []struct {
-			Name     string
-			DataType string
-		}{
+		SchemaFields: []SchemaField{
 			{Name: "ID", DataType: "int"},
 			{Name: "Name", DataType: "string"},
 			{Name: "CreatedAt", DataType: "Time"},

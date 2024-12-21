@@ -14,11 +14,13 @@ import (
 )
 
 type Schema struct {
-	SchemaName   string
-	SchemaFields []struct {
-		Name     string
-		DataType string
-	}
+	SchemaName   string        `json:"schema_name"`
+	SchemaFields []SchemaField `json:"schema_fields"`
+}
+
+type SchemaField struct {
+	Name     string `json:"name"`
+	DataType string `json:"data_type"`
 }
 
 func Parse(fileName string) Schema {
@@ -35,10 +37,7 @@ func Parse(fileName string) Schema {
 			if funcDecl.Tok == token.TYPE {
 				table.SchemaName = funcDecl.Specs[0].(*ast.TypeSpec).Name.Name
 				for _, field := range funcDecl.Specs[0].(*ast.TypeSpec).Type.(*ast.StructType).Fields.List {
-					fields := struct {
-						Name     string
-						DataType string
-					}{}
+					fields := SchemaField{}
 					fields.Name = field.Names[0].Name
 					switch t := field.Type.(type) {
 					case *ast.Ident:
