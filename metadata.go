@@ -50,7 +50,7 @@ LIMIT 1;
 	md := metadata{}
 
 	row := dbCon.QueryRow(query)
-	err := row.Scan(&md)
+	err := row.Scan(&md.ID, &md.CurrentState, &md.ChangesMade, &md.CreatedAt)
 	if err != nil {
 		return md, err
 	}
