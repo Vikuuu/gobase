@@ -5,9 +5,9 @@ import (
 )
 
 type ChangeLog struct {
-	Creations []Create
-	Updates   []Update
-	Deletions []Delete
+	Creations []Create `json:"creations"`
+	Updates   []Update `json:"updates"`
+	Deletions []Delete `json:"deletions"`
 }
 
 type Create struct {
