@@ -53,7 +53,7 @@ func handlerMigrate(s *state, cmd command) error {
 		return err
 	}
 
-	if cmd.Args[0] == "down" {
+	if len(cmd.Args) > 0 && cmd.Args[0] == "down" {
 		var files []string
 		err := filepath.Walk(migrationDir, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
