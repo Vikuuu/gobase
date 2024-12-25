@@ -58,6 +58,36 @@ LIMIT 1;
 	return md, nil
 }
 
+func GetLatestId(dbCon *sql.DB) (int, error) {
+	query := `SELECT id
+FROM gobase_metadata
+ORDER BY id DESC
+LIMIT 1;`
+	var lastestVersion int
+	row := dbCon.QueryRow(query)
+	err := row.Scan(&lastestVersion)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		} else if err.Error() == "no such table: gobase_metadata" {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return lastestVersion, nil
+}
+
+func updateMetadata(dbCon *sql.DB, newJSON, changeJSON string) error {
+	query := `INSERT INTO gobase_metadata(current_state, changes_made)
+VALUES (?, ?);
+`
+	_, err := dbCon.Exec(query, newJSON, changeJSON)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func serializeSchema(schema Schema) (string, error) {
 	jsonData, err := json.Marshal(schema)
 	if err != nil {
