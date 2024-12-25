@@ -33,13 +33,13 @@ func TestCreationMigrationFile(t *testing.T) {
 	}
 	defer dbCon.Close()
 
-	err = testPrerequisite(dbCon)
-	if err != nil {
-		t.Fatalf("Err creating meta table: %s", err)
-	}
+	// err = testPrerequisite(dbCon)
+	// if err != nil {
+	// 	t.Fatalf("Err creating meta table: %s", err)
+	// }
 
 	// Call the function under test
-	got, err := creationMigration(dbCon, testFile)
+	got, _, _, err := creationMigration(dbCon, testFile)
 	if err != nil {
 		t.Fatalf("Error creating mig: %s", err)
 	}
@@ -64,7 +64,7 @@ func TestMigrationFile(t *testing.T) {
 		t.Fatalf("Err creating meta table: %s", err)
 	}
 
-	err = MigrationFile(dbConn, testFile, testMigDir, "001_users.sql")
+	_, _, err = MigrationFile(dbConn, testFile, testMigDir, "001_users.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,14 +117,17 @@ func TestMigration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Err conn db: %s", err)
 	}
+	testPrerequisite(dbCon)
 
 	testCase := []struct {
 		name   string
 		testFn func(*sql.DB, string) error
 		result string
 	}{
-		{name: "TestUpMigration", testFn: upMigrate, result: "users"},
-		{name: "TestDownMigration", testFn: downMigrate, result: ""},
+		{name: "TestUpMigration", testFn: func(db *sql.DB, mFile string) error {
+			return UpMigrate(db, mFile, "", "")
+		}, result: "users"},
+		{name: "TestDownMigration", testFn: DownMigrate, result: ""},
 	}
 
 	for _, tc := range testCase {
@@ -137,7 +140,7 @@ func TestMigration(t *testing.T) {
 			}
 
 			row, err := dbCon.Query(
-				`SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'`,
+				`SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%' AND 'gobase_metadata'`,
 			)
 			if err != nil {
 				t.Fatalf("Err getting table rows: %s", err)

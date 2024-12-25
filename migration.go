@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"bytes"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -25,54 +26,92 @@ const (
 	downMigTempLine = "-- Down Migration"
 )
 
-// calls creation func accordingly
-func MigrationFile(dbConn *sql.DB, fileName, createMigDirName, MigFilename string) error {
-	data, err := creationMigration(dbConn, fileName)
+var ErrNoChange = errors.New("No changes detected")
+
+func MigrationFile(
+	dbConn *sql.DB,
+	fileName, createMigDirName, MigFilename string,
+) (newJSON, changeJSON string, err error) {
+	data, newJSON, changeJSON, err := creationMigration(dbConn, fileName)
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
 	err = os.MkdirAll(createMigDirName, 0750)
 	if err != nil {
-		return fmt.Errorf("Error creating dir: %s", err)
+		return "", "", fmt.Errorf("Error creating dir: %s", err)
 	}
 	// outFileName := createMigDirName + "/001_users.sql"
 	outFileName := filepath.Join(createMigDirName, MigFilename)
 
 	f, err := os.Create(outFileName)
 	if err != nil {
-		return fmt.Errorf("Error creating file: %s", err)
+		return "", "", fmt.Errorf("Error creating file: %s", err)
 	}
 	defer f.Close()
-	return saveMigrationFile(f.Name(), data)
+	return newJSON, changeJSON, saveMigrationFile(f.Name(), data)
 }
 
-func creationMigration(dbConn *sql.DB, fileName string) ([]byte, error) {
-	schema := Parse(fileName)
-	upMigQuery, downMigQuery := "", ""
-
-	// TODO: Now check it with the previous state of the database
-	// If their is no previous state, then call the table creation function
-	// previous State var
-	_, err := getPreviousState(dbConn)
+func creationMigration(
+	dbConn *sql.DB,
+	fileName string,
+) (migrationSyntax []byte, newState, changes string, err error) {
+	newSchema := Parse(fileName)
+	newState, err = serializeSchema(newSchema)
 	if err != nil {
-		// This case will mean that their is no previous state
-		// and this is the first time the migration is being run
-		if err == sql.ErrNoRows {
-			upMigQuery, downMigQuery = SqLiteCreateTable(fileName, schema)
-		} else {
-			return []byte{}, err
-		}
+		return nil, "", "", nil
 	}
 
+	prevState, err := getPreviousState(dbConn)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			upMigQuery, downMigQuery := SqLiteCreateTable(newSchema)
+			migrationSyntax = writeBuffer(upMigQuery, downMigQuery)
+			return migrationSyntax, newState, changes, nil
+		} else if err.Error() == "no such table: gobase_metadata" {
+			err := CreateMetaTable(dbConn)
+			if err != nil {
+				return nil, "", "", err
+			}
+			return creationMigration(dbConn, fileName)
+		}
+		return nil, "", "", err
+	}
+	upMigQuery, downMigQuery, changes, err := generateMigrationQueries(
+		newSchema,
+		prevState.CurrentState,
+	)
+	migrationSyntax = writeBuffer(upMigQuery, downMigQuery)
+	return migrationSyntax, newState, changes, nil
+}
+
+func generateMigrationQueries(
+	newSchema Schema,
+	prevState string,
+) (upQuery, downQuery, changeJSON string, err error) {
+	prevSchema, err := deserializeSchema(prevState)
+	if err != nil {
+		return "", "", "", err
+	}
+	changes := categorizeSchemaChanges(newSchema, prevSchema)
+	if len(changes.Creations) == 0 && len(changes.Deletions) == 0 && len(changes.Updates) == 0 {
+		return "", "", "", ErrNoChange
+	}
+	upQuery, downQuery = SqliteMigration(changes)
+	changesJSON, err := serializeStruct[ChangeLog](changes)
+	if err != nil {
+		return "", "", "", err
+	}
+	return upQuery, downQuery, changesJSON, nil
+}
+
+func writeBuffer(up, down string) []byte {
 	var buffer bytes.Buffer
-
 	buffer.WriteString(upMigrationTemp)
-	buffer.Write([]byte(upMigQuery))
+	buffer.Write([]byte(up))
 	buffer.WriteString(downMigrationTemp)
-	buffer.Write([]byte(downMigQuery))
-
-	return buffer.Bytes(), nil
+	buffer.Write([]byte(down))
+	return buffer.Bytes()
 }
 
 func saveMigrationFile(outName string, data []byte) error {
@@ -82,7 +121,6 @@ func saveMigrationFile(outName string, data []byte) error {
 // NOTE: Read from the given migration file and
 // read only btw `--Up migration` and `--Down migration`
 func getUpMigration(migrationFile string) (string, error) {
-	// open the file
 	file, err := os.Open(migrationFile)
 	if err != nil {
 		return "", fmt.Errorf("Err opening file: %s", err)
@@ -90,7 +128,6 @@ func getUpMigration(migrationFile string) (string, error) {
 	defer file.Close()
 
 	var migration string
-
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
@@ -121,7 +158,6 @@ func getDownMigration(migrationFile string) (string, error) {
 	defer file.Close()
 
 	var migration []string
-
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
@@ -138,7 +174,6 @@ func getDownMigration(migrationFile string) (string, error) {
 	})
 
 	res := ""
-
 	for i := indexDown + 1; i < len(migration); i++ {
 		res += migration[i]
 	}
@@ -148,7 +183,7 @@ func getDownMigration(migrationFile string) (string, error) {
 
 // Func responsible for migrating to the database
 // Takes the dbCon, and migration file as Input
-func upMigrate(dbCon *sql.DB, migrationFile string) error {
+func UpMigrate(dbCon *sql.DB, migrationFile, newJSON, changeJSON string) error {
 	upMigration, err := getUpMigration(migrationFile)
 	if err != nil {
 		return err
@@ -159,10 +194,15 @@ func upMigrate(dbCon *sql.DB, migrationFile string) error {
 		return fmt.Errorf("Err migrating: %s", err)
 	}
 
+	// Update the metadata table to add the current state.
+	err = updateMetadata(dbCon, newJSON, changeJSON)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func downMigrate(dbCon *sql.DB, migrationFile string) error {
+func DownMigrate(dbCon *sql.DB, migrationFile string) error {
 	downMigration, err := getDownMigration(migrationFile)
 	if err != nil {
 		return err
