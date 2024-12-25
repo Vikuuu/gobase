@@ -92,17 +92,7 @@ func handlerMigrate(s *state, cmd command) error {
 	if err != nil {
 		return err
 	}
-	filename := ""
-	err = filepath.Walk(migrationDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() {
-			filename = info.Name()
-		}
-		return nil
-	})
-	fileName := fmt.Sprintf("%03d_%s.sql", latestVer+1, filename)
+	fileName := fmt.Sprintf("%03d_migration.sql", latestVer+1)
 
 	newJSON, changeJSON, err := gobase.MigrationFile(dbConn, schemaFileName, migrationDir, fileName)
 	if err != nil {
