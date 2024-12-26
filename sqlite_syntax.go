@@ -37,7 +37,7 @@ func SqliteMigration(changes ChangeLog) (upQuery, downQuery string) {
 				sqliteMapping[cData[1]],
 			)
 			downQuery += fmt.Sprintf(
-				"ALTER TABLE %s\nDROP COLUMN %s;\n\n",
+				"ALTER TABLE %s DROP COLUMN %s;\n\n",
 				cChange.TableName,
 				cData[0],
 			)
@@ -54,7 +54,7 @@ func SqliteMigration(changes ChangeLog) (upQuery, downQuery string) {
 				dData[0],
 			)
 			downQuery += fmt.Sprintf(
-				"ALTER TABLE %s\nADD COLUMN %s %s;\n\n",
+				"ALTER TABLE %s ADD COLUMN %s %s;\n\n",
 				dChange.TableName,
 				dData[0],
 				sqliteMapping[dData[1]],
@@ -73,7 +73,7 @@ func SqliteMigration(changes ChangeLog) (upQuery, downQuery string) {
 					uChange.UpdateData,
 				)
 				downQuery += fmt.Sprintf(
-					"ALTER TABLE %s\nRENAME TO %s;\n\n",
+					"ALTER TABLE %s RENAME TO %s;\n\n",
 					uChange.UpdateData,
 					uChange.TableName,
 				)
@@ -86,7 +86,7 @@ func SqliteMigration(changes ChangeLog) (upQuery, downQuery string) {
 					colNameArr[1],
 				)
 				downQuery += fmt.Sprintf(
-					"ALTER TABLE %s\nRENAME COLUMN %s to %s;\n\n",
+					"ALTER TABLE %s RENAME COLUMN %s to %s;\n\n",
 					uChange.TableName,
 					colNameArr[1],
 					colNameArr[0],
