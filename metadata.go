@@ -1,4 +1,3 @@
-// All the metadata needed for automated changes detection
 package gobase
 
 import (

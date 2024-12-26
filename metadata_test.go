@@ -104,17 +104,14 @@ func TestUpdateMetadata(t *testing.T) {
 		t.Fatalf("Err creating metadata: %s", err)
 	}
 
-	// Test data
 	newJSON := `{"key": "value"}`
 	changeJSON := `{"change": "added_key"}`
 
-	// Call the function to test
 	err = updateMetadata(db, newJSON, changeJSON)
 	if err != nil {
 		t.Fatalf("updateMetadata failed: %v", err)
 	}
 
-	// Validate the insertion
 	query := `SELECT current_state, changes_made FROM gobase_metadata WHERE current_state = ? AND changes_made = ?`
 	row := db.QueryRow(query, newJSON, changeJSON)
 
@@ -124,7 +121,6 @@ func TestUpdateMetadata(t *testing.T) {
 		t.Fatalf("Failed to retrieve inserted data: %v", err)
 	}
 
-	// Assert the results
 	if retrievedCurrentState != newJSON {
 		t.Errorf("Expected current_state: %s, got: %s", newJSON, retrievedCurrentState)
 	}

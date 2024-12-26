@@ -1,4 +1,3 @@
-// This file holds the SQLite database connection handler
 package gobase
 
 import (

@@ -1,4 +1,3 @@
-// File storing all code for migrations
 package gobase
 
 import (
@@ -21,7 +20,6 @@ const (
 -- Down Migration
 
 `
-	// createMigDirName = "./migrations"
 	upMigTempLine   = "-- Up Migration"
 	downMigTempLine = "-- Down Migration"
 )
@@ -41,7 +39,6 @@ func MigrationFile(
 	if err != nil {
 		return "", "", fmt.Errorf("Error creating dir: %s", err)
 	}
-	// outFileName := createMigDirName + "/001_users.sql"
 	outFileName := filepath.Join(createMigDirName, MigFilename)
 
 	f, err := os.Create(outFileName)
@@ -118,8 +115,6 @@ func saveMigrationFile(outName string, data []byte) error {
 	return os.WriteFile(outName, data, 0644)
 }
 
-// NOTE: Read from the given migration file and
-// read only btw `--Up migration` and `--Down migration`
 func getUpMigration(migrationFile string) (string, error) {
 	file, err := os.Open(migrationFile)
 	if err != nil {
@@ -148,8 +143,6 @@ func getUpMigration(migrationFile string) (string, error) {
 	return migration, nil
 }
 
-// NOTE: Read from the given migration file and
-// read only btw `--Down migration` and `EOF`
 func getDownMigration(migrationFile string) (string, error) {
 	file, err := os.Open(migrationFile)
 	if err != nil {
@@ -181,8 +174,6 @@ func getDownMigration(migrationFile string) (string, error) {
 	return res, nil
 }
 
-// Func responsible for migrating to the database
-// Takes the dbCon, and migration file as Input
 func UpMigrate(dbCon *sql.DB, migrationFile, newJSON, changeJSON string) error {
 	upMigration, err := getUpMigration(migrationFile)
 	if err != nil {
@@ -194,7 +185,6 @@ func UpMigrate(dbCon *sql.DB, migrationFile, newJSON, changeJSON string) error {
 		return fmt.Errorf("Err migrating: %s", err)
 	}
 
-	// Update the metadata table to add the current state.
 	err = updateMetadata(dbCon, newJSON, changeJSON)
 	if err != nil {
 		return err

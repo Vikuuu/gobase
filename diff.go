@@ -56,7 +56,6 @@ func categorizeSchemaChanges(oldSchema, newSchema Schema) ChangeLog {
 				TableName:  oldSchema.SchemaName,
 				UpdateData: newSchema.SchemaName,
 			},
-			// fmt.Sprintf("Rename schema %s to %s", oldSchema.SchemaName, newSchema.SchemaName),
 		)
 	}
 
@@ -73,7 +72,6 @@ func categorizeSchemaChanges(oldSchema, newSchema Schema) ChangeLog {
 
 	// 3. Detect Field Creation and Updates
 	for name, newType := range newFieldsMap {
-		// oldType, exists := oldFieldsMap[name]
 		_, exists := oldFieldsMap[name]
 		if !exists {
 			changes.Creations = append(
@@ -84,7 +82,6 @@ func categorizeSchemaChanges(oldSchema, newSchema Schema) ChangeLog {
 					TableName:    oldSchema.SchemaName,
 					CreationData: fmt.Sprintf("%s:%s", name, newType),
 				},
-				// fmt.Sprintf("Field created: %s (%s)", name, newType),
 			)
 		}
 		// NOTE: The feature of changing the data type of table column is not supported, so we can skip this for now,
@@ -105,7 +102,6 @@ func categorizeSchemaChanges(oldSchema, newSchema Schema) ChangeLog {
 					TableName:    oldSchema.SchemaName,
 					DeletionData: fmt.Sprintf("%s:%s", name, oldFieldsMap[name]),
 				})
-			// fmt.Sprintf("Field deleted: %s", name))
 		}
 	}
 

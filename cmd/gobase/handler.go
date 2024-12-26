@@ -37,10 +37,6 @@ func handlerInit(s *state, cmd command) error {
 }
 
 func handlerMigrate(s *state, cmd command) error {
-	/* TODO: Parse the file given in the state struct call the
-	   migration creation function according to the dialect.
-	   Take the snapshot of the migrated data.
-	*/
 	schemaFileName := s.cfg.SchemaData
 	workingDir, err := os.Getwd()
 	if err != nil {
@@ -99,9 +95,6 @@ func handlerMigrate(s *state, cmd command) error {
 		return err
 	}
 
-	// do the up Migration and pass the newState(json) to that
-	// function so that it can create new field in the metadata table
-	// and add the newState to its currentState field.
 	err = gobase.UpMigrate(dbConn, filepath.Join(migrationDir, fileName), newJSON, changeJSON)
 	if err != nil {
 		return err
