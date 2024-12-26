@@ -44,11 +44,10 @@ func getPreviousState(dbCon *sql.DB) (metadata, error) {
 	query := `
 SELECT id, current_state, changes_made, created_at
 FROM gobase_metadata
+ORDER BY id DESC
 LIMIT 1;
     `
-
 	md := metadata{}
-
 	row := dbCon.QueryRow(query)
 	err := row.Scan(&md.ID, &md.CurrentState, &md.ChangesMade, &md.CreatedAt)
 	if err != nil {
