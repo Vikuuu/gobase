@@ -31,7 +31,7 @@ func main() {
 	cmds.register("migrate", handlerMigrate, "migrate", "Migrate to database")
 
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: gobase <command>")
+		fmt.Println("Usage: gobase <command> \n\n use --help for more information")
 		return
 	}
 
