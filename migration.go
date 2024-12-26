@@ -93,7 +93,7 @@ func generateMigrationQueries(
 	if err != nil {
 		return "", "", "", err
 	}
-	changes := categorizeSchemaChanges(newSchema, prevSchema)
+	changes := categorizeSchemaChanges(prevSchema, newSchema)
 	if len(changes.Creations) == 0 && len(changes.Deletions) == 0 && len(changes.Updates) == 0 {
 		return "", "", "", ErrNoChange
 	}
