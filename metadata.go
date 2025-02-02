@@ -86,7 +86,7 @@ VALUES (?, ?);
 	return nil
 }
 
-func serializeSchema(schema Schema) (string, error) {
+func serializeSchema(schema []Schema) (string, error) {
 	jsonData, err := json.Marshal(schema)
 	if err != nil {
 		return "", err
@@ -94,11 +94,11 @@ func serializeSchema(schema Schema) (string, error) {
 	return string(jsonData), nil
 }
 
-func deserializeSchema(schema string) (Schema, error) {
-	var s Schema
+func deserializeSchema(schema string) ([]Schema, error) {
+	var s []Schema
 	err := json.Unmarshal([]byte(schema), &s)
 	if err != nil {
-		return Schema{}, err
+		return s, err
 	}
 	return s, nil
 }

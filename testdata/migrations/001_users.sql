@@ -8,6 +8,7 @@ CREATE TABLE users (
 	is_member BOOLEAN
 );
 
+
 -- Down Migration
 
 DROP TABLE users;

@@ -14,6 +14,7 @@ import (
 )
 
 type Schema struct {
+	// SchemaID     int           `json:"schema_id"`
 	SchemaName   string        `json:"schema_name"`
 	SchemaFields []SchemaField `json:"schema_fields"`
 }
@@ -23,19 +24,20 @@ type SchemaField struct {
 	DataType string `json:"data_type"`
 }
 
-func Parse(fileName string) Schema {
+func Parse(fileName string) []Schema {
 	fs := token.NewFileSet()
 	f, err := parser.ParseFile(fs, fileName, nil, parser.AllErrors)
 	if err != nil {
 		log.Fatalf("Errors: %s", err)
 	}
 
-	table := Schema{}
+	var tables []Schema
 
 	ast.Inspect(f, func(n ast.Node) bool {
-		if funcDecl, ok := n.(*ast.GenDecl); ok {
+		if funcDecl, ok := n.(*ast.GenDecl); ok && funcDecl.Tok == token.TYPE {
+			s := Schema{}
 			if funcDecl.Tok == token.TYPE {
-				table.SchemaName = funcDecl.Specs[0].(*ast.TypeSpec).Name.Name
+				s.SchemaName = funcDecl.Specs[0].(*ast.TypeSpec).Name.Name
 				for _, field := range funcDecl.Specs[0].(*ast.TypeSpec).Type.(*ast.StructType).Fields.List {
 					fields := SchemaField{}
 					fields.Name = field.Names[0].Name
@@ -49,12 +51,13 @@ func Parse(fileName string) Schema {
 						fields.DataType = "unkown"
 					}
 
-					table.SchemaFields = append(table.SchemaFields, fields)
+					s.SchemaFields = append(s.SchemaFields, fields)
 				}
 			}
+			tables = append(tables, s)
 		}
 		return true
 	})
 
-	return table
+	return tables
 }

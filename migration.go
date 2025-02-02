@@ -83,7 +83,7 @@ func creationMigration(
 }
 
 func generateMigrationQueries(
-	newSchema Schema,
+	newSchema []Schema,
 	prevState string,
 ) (upQuery, downQuery, changeJSON string, err error) {
 	prevSchema, err := deserializeSchema(prevState)
