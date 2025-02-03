@@ -15,7 +15,7 @@ const (
 )
 
 var expected = fmt.Sprintf(
-	"-- Up Migration\n\nCREATE TABLE users (\n\tid INTEGER,\n\tname TEXT,\n\tcreated_at DATETIME,\n\tupdated_at DATETIME,\n\tis_member BOOLEAN\n);\n\n-- Down Migration\n\nDROP TABLE users;",
+	"-- Up Migration\n\nCREATE TABLE users (\n\tid INTEGER,\n\tname TEXT,\n\tcreated_at DATETIME,\n\tupdated_at DATETIME,\n\tis_member BOOLEAN\n);\n\n\n-- Down Migration\n\nDROP TABLE users;\n",
 )
 
 func testPrerequisite(dbConn *sql.DB) error {
@@ -46,7 +46,7 @@ func TestCreationMigrationFile(t *testing.T) {
 
 	// Compare results
 	if expected != string(got) {
-		t.Errorf("Mismatch in migration SQL:\nExpected:\n%s\n\nGot:\n%s", expected, got)
+		t.Errorf("Mismatch in migration SQL:\nExpected:\n%q\n\nGot:\n%q", expected, got)
 	}
 
 	os.Remove(DBFILENAME)
@@ -88,7 +88,7 @@ func TestMigrationFile(t *testing.T) {
 
 func TestGetUpMigration(t *testing.T) {
 	expUpMig := fmt.Sprintf(
-		"\nCREATE TABLE users (\n\tid INTEGER,\n\tname TEXT,\n\tcreated_at DATETIME,\n\tupdated_at DATETIME,\n\tis_member BOOLEAN\n);\n\n",
+		"\nCREATE TABLE users (\n\tid INTEGER,\n\tname TEXT,\n\tcreated_at DATETIME,\n\tupdated_at DATETIME,\n\tis_member BOOLEAN\n);\n\n\n",
 	)
 	gotUpMig, err := getUpMigration("./testdata/migrations/001_users.sql")
 	if err != nil {
@@ -96,7 +96,7 @@ func TestGetUpMigration(t *testing.T) {
 	}
 
 	if expUpMig != gotUpMig {
-		t.Errorf("Migration not equal. expected: \n%s\n. got: \n%s\n", expUpMig, gotUpMig)
+		t.Errorf("Migration not equal. expected: \n%q\n. got: \n%q\n", expUpMig, gotUpMig)
 	}
 }
 

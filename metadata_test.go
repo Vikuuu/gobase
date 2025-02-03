@@ -42,39 +42,66 @@ func TestCreateMetaTable(t *testing.T) {
 func TestSerializeSchema(t *testing.T) {
 	tests := []struct {
 		name         string
-		input        Schema
+		input        []Schema
 		expectedJSON string
 		expectError  bool
 	}{
 		{
 			name: "Valid schema with fields",
-			input: Schema{
-				SchemaName: "users",
-				SchemaFields: []SchemaField{
-					{"id", "INTEGER"},
-					{"name", "TEXT"},
-					{"email", "TEXT"},
+			input: []Schema{
+				{
+					SchemaName: "Users",
+					SchemaFields: []SchemaField{
+						{"ID", "int"},
+						{"Name", "string"},
+						{"Email", "string"},
+					},
 				},
 			},
-			expectedJSON: `{"schema_name":"users","schema_fields":[{"name":"id","data_type":"INTEGER"},{"name":"name","data_type":"TEXT"},{"name":"email","data_type":"TEXT"}]}`,
+			expectedJSON: `[{"schema_name":"Users","schema_fields":[{"name":"ID","data_type":"int"},{"name":"Name","data_type":"string"},{"name":"Email","data_type":"string"}]}]`,
 			expectError:  false,
 		},
 		{
 			name: "Empty schema fields",
-			input: Schema{
-				SchemaName:   "empty_table",
-				SchemaFields: []SchemaField{},
+			input: []Schema{
+				{
+					SchemaName:   "empty_table",
+					SchemaFields: []SchemaField{},
+				},
 			},
-			expectedJSON: `{"schema_name":"empty_table","schema_fields":[]}`,
+			expectedJSON: `[{"schema_name":"empty_table","schema_fields":[]}]`,
 			expectError:  false,
 		},
 		{
 			name: "Empty schema name and fields",
-			input: Schema{
-				SchemaName:   "",
-				SchemaFields: []SchemaField{},
+			input: []Schema{
+				{
+					SchemaName:   "",
+					SchemaFields: []SchemaField{},
+				},
 			},
-			expectedJSON: `{"schema_name":"","schema_fields":[]}`,
+			expectedJSON: `[{"schema_name":"","schema_fields":[]}]`,
+			expectError:  false,
+		},
+		{
+			name: "Two Schema Structs",
+			input: []Schema{
+				{
+					SchemaName: "users",
+					SchemaFields: []SchemaField{
+						{"id", "INTEGER"},
+						{"name", "TEXT"},
+					},
+				},
+				{
+					SchemaName: "user2",
+					SchemaFields: []SchemaField{
+						{"id", "INTEGER"},
+						{"name", "TEXT"},
+					},
+				},
+			},
+			expectedJSON: `[{"schema_name":"users","schema_fields":[{"name":"id","data_type":"INTEGER"},{"name":"name","data_type":"TEXT"}]},{"schema_name":"user2","schema_fields":[{"name":"id","data_type":"INTEGER"},{"name":"name","data_type":"TEXT"}]}]`,
 			expectError:  false,
 		},
 	}

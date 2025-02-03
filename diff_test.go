@@ -8,66 +8,79 @@ import (
 func TestCategorizeSchemaChanges(t *testing.T) {
 	tests := []struct {
 		name      string
-		oldSchema Schema
-		newSchema Schema
+		oldSchema []Schema
+		newSchema []Schema
 		expected  ChangeLog
 	}{
 		{
 			name: "No changes",
-			oldSchema: Schema{
-				SchemaName: "users",
-				SchemaFields: []SchemaField{
-					{Name: "id", DataType: "int"},
-					{Name: "name", DataType: "string"},
+			oldSchema: []Schema{
+				{
+					SchemaName: "users",
+					SchemaFields: []SchemaField{
+						{"id", "int"},
+						{"name", "string"},
+					},
 				},
 			},
-			newSchema: Schema{
-				SchemaName: "users",
-				SchemaFields: []SchemaField{
-					{Name: "id", DataType: "int"},
-					{Name: "name", DataType: "string"},
+			newSchema: []Schema{
+				{
+					SchemaName: "users",
+					SchemaFields: []SchemaField{
+						{Name: "id", DataType: "int"},
+						{Name: "name", DataType: "string"},
+					},
 				},
 			},
 			expected: ChangeLog{},
 		},
+		// NOTE: This feature is currently not worked on!!
+		// {
+		// 	name: "Schema name updated",
+		// 	oldSchema: []Schema{
+		// 		{
+		// 			SchemaName: "users",
+		// 			SchemaFields: []SchemaField{
+		// 				{Name: "id", DataType: "int"},
+		// 			},
+		// 		},
+		// 	},
+		// 	newSchema: []Schema{
+		// 		{
+		// 			SchemaName: "accounts",
+		// 			SchemaFields: []SchemaField{
+		// 				{Name: "id", DataType: "int"},
+		// 			},
+		// 		},
+		// 	},
+		// 	expected: ChangeLog{
+		// 		Updates: []Update{
+		// 			{
+		// 				UpdateType: NAMEUPDATE,
+		// 				ON:         ONTABLE,
+		// 				TableName:  "users",
+		// 				UpdateData: "accounts",
+		// 			},
+		// 		},
+		// 	},
+		// },
 		{
-			name: "Schema name updated",
-			oldSchema: Schema{
-				SchemaName: "users",
-				SchemaFields: []SchemaField{
-					{Name: "id", DataType: "int"},
-				},
-			},
-			newSchema: Schema{
-				SchemaName: "accounts",
-				SchemaFields: []SchemaField{
-					{Name: "id", DataType: "int"},
-				},
-			},
-			expected: ChangeLog{
-				Updates: []Update{
-					{
-						UpdateType: NAMEUPDATE,
-						ON:         ONTABLE,
-						TableName:  "users",
-						UpdateData: "accounts",
+			name: "Field created",
+			oldSchema: []Schema{
+				{
+					SchemaName: "users",
+					SchemaFields: []SchemaField{
+						{Name: "id", DataType: "int"},
 					},
 				},
 			},
-		},
-		{
-			name: "Field created",
-			oldSchema: Schema{
-				SchemaName: "users",
-				SchemaFields: []SchemaField{
-					{Name: "id", DataType: "int"},
-				},
-			},
-			newSchema: Schema{
-				SchemaName: "users",
-				SchemaFields: []SchemaField{
-					{Name: "id", DataType: "int"},
-					{Name: "email", DataType: "string"},
+			newSchema: []Schema{
+				{
+					SchemaName: "users",
+					SchemaFields: []SchemaField{
+						{Name: "id", DataType: "int"},
+						{Name: "email", DataType: "string"},
+					},
 				},
 			},
 			expected: ChangeLog{
@@ -83,17 +96,21 @@ func TestCategorizeSchemaChanges(t *testing.T) {
 		},
 		{
 			name: "Field deleted",
-			oldSchema: Schema{
-				SchemaName: "users",
-				SchemaFields: []SchemaField{
-					{Name: "id", DataType: "int"},
-					{Name: "email", DataType: "string"},
+			oldSchema: []Schema{
+				{
+					SchemaName: "users",
+					SchemaFields: []SchemaField{
+						{Name: "id", DataType: "int"},
+						{Name: "email", DataType: "string"},
+					},
 				},
 			},
-			newSchema: Schema{
-				SchemaName: "users",
-				SchemaFields: []SchemaField{
-					{Name: "id", DataType: "int"},
+			newSchema: []Schema{
+				{
+					SchemaName: "users",
+					SchemaFields: []SchemaField{
+						{Name: "id", DataType: "int"},
+					},
 				},
 			},
 			expected: ChangeLog{

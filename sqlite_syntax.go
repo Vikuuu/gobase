@@ -5,24 +5,30 @@ import (
 	"strings"
 )
 
-func SqLiteCreateTable(schema Schema) (upQuery, downQuery string) {
-	upQuery = fmt.Sprintf("CREATE TABLE %s (\n\t", schema.SchemaName)
-	for i, field := range schema.SchemaFields {
-		if i == len(schema.SchemaFields)-1 {
-			upQuery += fmt.Sprintf(
-				"%s %s\n",
-				toSnakeCase(field.Name),
-				sqliteMapping[field.DataType],
-			)
-		} else {
-			upQuery += fmt.Sprintf("%s %s,\n\t", toSnakeCase(field.Name), sqliteMapping[field.DataType])
+func SqLiteCreateTable(schemas []Schema) (string, string) {
+	size := len(schemas)
+	upQuery, downQuery := make([]string, size), make([]string, size)
+	for _, schema := range schemas {
+		uQ := fmt.Sprintf("CREATE TABLE %s (\n\t", schema.SchemaName)
+		for i, field := range schema.SchemaFields {
+			if i == len(schema.SchemaFields)-1 {
+				uQ += fmt.Sprintf(
+					"%s %s\n",
+					toSnakeCase(field.Name),
+					sqliteMapping[field.DataType],
+				)
+			} else {
+				uQ += fmt.Sprintf("%s %s,\n\t", toSnakeCase(field.Name), sqliteMapping[field.DataType])
+			}
 		}
+		uQ += ");\n"
+
+		dQ := fmt.Sprintf("DROP TABLE %s;\n", schema.SchemaName)
+		upQuery = append(upQuery, uQ)
+		downQuery = append(downQuery, dQ)
 	}
-	upQuery += ");"
-
-	downQuery = fmt.Sprintf("DROP TABLE %s;", schema.SchemaName)
-
-	return upQuery, downQuery
+	downQuery = reseverSlice(downQuery)
+	return strings.Join(upQuery, ""), strings.Join(downQuery, "")
 }
 
 func SqliteMigration(changes ChangeLog) (upQuery, downQuery string) {

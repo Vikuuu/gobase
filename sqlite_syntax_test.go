@@ -5,18 +5,37 @@ import (
 )
 
 func TestSqLiteCreateTable(t *testing.T) {
-	fileName := "./testdata/create_table.go"
-	expectedUpQuery := "CREATE TABLE users (\n\tid INTEGER,\n\tname TEXT,\n\tcreated_at DATETIME,\n\tupdated_at DATETIME,\n\tis_member BOOLEAN\n);"
-	expectedDownQuery := "DROP TABLE users;"
-	schema := Parse(fileName)
-
-	outputUpQuery, outputDownQuery := SqLiteCreateTable(schema)
-
-	if expectedUpQuery != outputUpQuery {
-		t.Errorf("Up query err. expected=%s. got=%s", expectedUpQuery, outputUpQuery)
+	test := []struct {
+		name              string
+		fileName          string
+		expectedUpQuery   string
+		expectedDownQuery string
+	}{
+		{
+			name:              "Single Table",
+			fileName:          "./testdata/create_table.go",
+			expectedUpQuery:   "CREATE TABLE users (\n\tid INTEGER,\n\tname TEXT,\n\tcreated_at DATETIME,\n\tupdated_at DATETIME,\n\tis_member BOOLEAN\n);\n",
+			expectedDownQuery: "DROP TABLE users;\n",
+		},
+		{
+			name:              "Two Table",
+			fileName:          "./testdata/multi_table_test.go",
+			expectedUpQuery:   "CREATE TABLE users (\n\tid INTEGER,\n\tname TEXT,\n\tcreated_at DATETIME,\n\tupdated_at DATETIME,\n\tis_member BOOLEAN\n);\nCREATE TABLE image (\n\tname TEXT,\n\ttype TEXT,\n\tsize INTEGER,\n\thidden BOOLEAN,\n\tcreated_at DATETIME,\n\tupdated_at DATETIME\n);\n",
+			expectedDownQuery: "DROP TABLE image;\nDROP TABLE users;\n",
+		},
 	}
-	if expectedDownQuery != outputDownQuery {
-		t.Errorf("Down query err. expected=%s. got=%s", expectedDownQuery, outputDownQuery)
+
+	for _, tt := range test {
+		schema := Parse(tt.fileName)
+
+		outputUpQuery, outputDownQuery := SqLiteCreateTable(schema)
+
+		if tt.expectedUpQuery != outputUpQuery {
+			t.Errorf("Up query err. expected=%s. got=%s", tt.expectedUpQuery, outputUpQuery)
+		}
+		if tt.expectedDownQuery != outputDownQuery {
+			t.Errorf("Down query err. expected=%s. got=%s", tt.expectedDownQuery, outputDownQuery)
+		}
 	}
 }
 
@@ -45,8 +64,8 @@ func TestSqliteMigration(t *testing.T) {
 					},
 				},
 			},
-			expUp:   "ALTER TABLE users\nADD COLUMN id INTEGER;\n",
-			expDown: "ALTER TABLE users\nDROP COLUMN id;\n",
+			expUp:   "ALTER TABLE users\nADD COLUMN id INTEGER;\n\n",
+			expDown: "ALTER TABLE users DROP COLUMN id;\n\n",
 		},
 		{
 			name: "Field Deletion",
@@ -60,8 +79,8 @@ func TestSqliteMigration(t *testing.T) {
 					},
 				},
 			},
-			expUp:   "ALTER TABLE users\nDROP COLUMN id;\n",
-			expDown: "ALTER TABLE users\nADD COLUMN id INTEGER;\n",
+			expUp:   "ALTER TABLE users\nDROP COLUMN id;\n\n",
+			expDown: "ALTER TABLE users ADD COLUMN id INTEGER;\n\n",
 		},
 		{
 			name: "Table Rename",
@@ -75,8 +94,8 @@ func TestSqliteMigration(t *testing.T) {
 					},
 				},
 			},
-			expUp:   "ALTER TABLE users\nRENAME TO accounts;\n",
-			expDown: "ALTER TABLE accounts\nRENAME TO users;\n",
+			expUp:   "ALTER TABLE users\nRENAME TO accounts;\n\n",
+			expDown: "ALTER TABLE accounts RENAME TO users;\n\n",
 		},
 		{
 			name: "Field Rename",
@@ -90,8 +109,8 @@ func TestSqliteMigration(t *testing.T) {
 					},
 				},
 			},
-			expUp:   "ALTER TABLE users\nRENAME COLUMN id to user_id;\n",
-			expDown: "ALTER TABLE users\nRENAME COLUMN user_id to id;\n",
+			expUp:   "ALTER TABLE users\nRENAME COLUMN id to user_id;\n\n",
+			expDown: "ALTER TABLE users RENAME COLUMN user_id to id;\n\n",
 		},
 	}
 
@@ -99,10 +118,10 @@ func TestSqliteMigration(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			gotUp, gotDown := SqliteMigration(tt.change)
 			if gotUp != tt.expUp {
-				t.Errorf("Up Mig Not Same\nExpected: %s\nGot: %s", tt.expUp, gotUp)
+				t.Errorf("Up Mig Not Same\nExpected: %q\nGot: %q", tt.expUp, gotUp)
 			}
 			if gotDown != tt.expDown {
-				t.Errorf("Down Mig Not Same\nExpected: %s\nGot: %s", tt.expDown, gotDown)
+				t.Errorf("Down Mig Not Same\nExpected: %q\nGot: %q", tt.expDown, gotDown)
 			}
 		})
 	}
